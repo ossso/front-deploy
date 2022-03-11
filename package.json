@@ -18,5 +18,19 @@
   "bugs": {
     "url": "https://github.com/ossso/front-deply/issues"
   },
-  "homepage": "https://github.com/ossso/front-deply#readme"
+  "homepage": "https://github.com/ossso/front-deply#readme",
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/register": "^7.13.16",
+    "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.28.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4"
+  },
+  "dependencies": {
+    "ali-oss": "^6.17.1",
+    "single-line-log": "^1.1.2"
+  }
 }
