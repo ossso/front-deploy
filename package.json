@@ -1,0 +1,22 @@
+{
+  "name": "@ossso/front-deply",
+  "version": "1.0.0",
+  "description": "前端发布工具",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ossso/front-deply.git"
+  },
+  "keywords": [
+    "deply"
+  ],
+  "author": "橙色阳光",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ossso/front-deply/issues"
+  },
+  "homepage": "https://github.com/ossso/front-deply#readme"
+}
