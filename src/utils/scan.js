@@ -14,9 +14,9 @@ import {
   isSet,
 } from '@ossso/utils';
 
-export const scan = async ({
+export const scanDir = async ({
   // 扫描目录
-  scanDir = '',
+  dir = '',
   // 相对目录的父级目录
   parent = '',
   // 列表
@@ -26,23 +26,23 @@ export const scan = async ({
   // 忽略规则
   ignoreRule = null,
 }) => {
-  const dirStat = await stat(scanDir);
+  const dirStat = await stat(dir);
   if (!dirStat || !dirStat.isDirectory()) {
-    throw Error(`扫描目录 ${scanDir} 不合法，无法继续扫描`);
+    throw Error(`扫描目录 ${dir} 不合法，无法继续扫描`);
   }
-  const scanDirIgnore = ig || ignore();
+  const scanDirIg = ig || ignore();
   if (!ig && isSet(ignoreRule)) {
-    scanDirIgnore.add(ignoreRule);
+    scanDirIg.add(ignoreRule);
   }
   const files = [];
-  const children = await readdir(scanDir);
+  const children = await readdir(dir);
   // 分析当前目录内容
   await Promise.all(children.map((i) => {
     const item = {
       // 文件名称
       name: i,
       // 完整路径
-      path: join(scanDir, i),
+      path: join(dir, i),
       // 相对位置
       relative: parent,
     };
@@ -52,8 +52,11 @@ export const scan = async ({
       item.isDirectory = res.isDirectory();
       // 是否为忽略文件或目录
       item.ignore = (() => {
-        const itemPath = item.isDirectory ? `${item.name}/` : item.name;
-        return scanDirIgnore.ignores(itemPath);
+        const relative = [
+          parent,
+          item.name,
+        ].filter((o) => o).join('/');
+        return scanDirIg.ignores(item.isDirectory ? `${relative}/` : relative);
       })();
     }).finally(() => {
       // 忽略对象不push到数组中
@@ -68,21 +71,21 @@ export const scan = async ({
       name,
       path,
     } = i;
-    return scan({
-      scanDir: path,
+    return scanDir({
+      dir: path,
       parent: [
         parent,
         name,
       ].filter((o) => o).join('/'),
       list,
-      ig: scanDirIgnore,
+      ig: scanDirIg,
     });
   }));
   list.push(...files);
   return list;
 };
 
-export default async (scanDir, ignoreRule) => scan({
-  scanDir,
+export default async (dir, ignoreRule) => scanDir({
+  dir,
   ignoreRule,
 });

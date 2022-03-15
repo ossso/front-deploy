@@ -3,4 +3,7 @@
  * 启动入口
  */
 require("@babel/register");
-require("./src");
+
+const deply = require("./src");
+
+module.exports = deply.default;
