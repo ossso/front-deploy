@@ -1,11 +1,11 @@
 {
   "name": "@ossso/front-deply",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "前端发布工具",
   "main": "index.js",
-  "exports": { 
+  "exports": {
     "require": "./dist/index.cjs",
-    "import": "./src/index.js" 
+    "import": "./src/index.js"
   },
   "scripts": {
     "build": "rollup ./src/index.js --file dist/index.cjs --format cjs",
