@@ -216,7 +216,7 @@ const deply = async ({
   const transferToTasks = (transferItem) => {
     const itemIndex = files.findIndex((f) => {
       const path = [f.relative, f.name].filter((o) => o).join('/');
-      return path === rule.transfer.match;
+      return path === transferItem.match;
     });
     if (itemIndex > -1) {
       const item = transferItem.type === 'move' ? files.splice(itemIndex, 1) : files[itemIndex];
