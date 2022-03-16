@@ -61,11 +61,12 @@ const deply = async ({
   });
 
   console.log(chalk.yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`));
+  const total = tasks.oss.length + tasks.cos.length + tasks.server.length;
   const bar = new ProgressBar(' 部署上传 :bar[:percent] 耗时:elapseds ', {
     complete: '>',
     incomplete: '-',
-    total: tasks.length,
-    width: Math.min(tasks.length * 2, 30),
+    total,
+    width: Math.min(total * 2, 30),
   });
 
   // OSS上传
