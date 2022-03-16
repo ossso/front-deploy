@@ -1,6 +1,6 @@
 {
   "name": "@ossso/front-deply",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "前端发布工具",
   "main": "index.js",
   "scripts": {
@@ -20,17 +20,17 @@
   },
   "homepage": "https://github.com/ossso/front-deply#readme",
   "devDependencies": {
-    "@babel/core": "^7.14.3",
-    "@babel/preset-env": "^7.14.4",
-    "@babel/register": "^7.13.16",
-    "cross-env": "^7.0.3",
-    "dotenv": "^10.0.0",
     "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4"
   },
   "dependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/register": "^7.13.16",
     "@ossso/utils": "^1.0.4",
+    "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
     "ali-oss": "^6.17.1",
     "chalk": "^4.1.2",
     "cos-nodejs-sdk-v5": "^2.11.6",
