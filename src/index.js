@@ -5,10 +5,10 @@ import ProgressBar from 'progress';
 import {
   oss as ossUpload,
   server as serverUpload,
-} from './upload';
+} from './upload/index';
 import scan from './utils/scan';
 
-export default async ({
+const deply = async ({
   // 上传目录
   dir,
   // 规则
@@ -79,3 +79,5 @@ export default async ({
   }
   console.log(chalk.bgBlue(' 部署完成 '));
 };
+
+export default deply;
