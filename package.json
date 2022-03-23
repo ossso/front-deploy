@@ -1,5 +1,5 @@
 {
-  "name": "@ossso/front-deply",
+  "name": "@ossso/front-deploy",
   "version": "1.0.6",
   "description": "前端发布工具",
   "main": "index.js",
@@ -13,17 +13,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ossso/front-deply.git"
+    "url": "git+https://github.com/ossso/front-deploy.git"
   },
   "keywords": [
-    "deply"
+    "deploy"
   ],
   "author": "橙色阳光",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ossso/front-deply/issues"
+    "url": "https://github.com/ossso/front-deploy/issues"
   },
-  "homepage": "https://github.com/ossso/front-deply#readme",
+  "homepage": "https://github.com/ossso/front-deploy#readme",
   "devDependencies": {
     "@babel/core": "^7.14.3",
     "@babel/preset-env": "^7.14.4",
