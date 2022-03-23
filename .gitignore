@@ -6,7 +6,6 @@ yarn-error.log*
 package-lock.json
 tests/**/coverage/
 *.local
-.deply.config.js
 
 # Editor directories and files
 .idea

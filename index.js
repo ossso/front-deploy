@@ -4,6 +4,6 @@
  */
 require("@babel/register");
 
-const deply = require("./src");
+const deploy = require("./src");
 
-module.exports = deply.default;
+module.exports = deploy.default;

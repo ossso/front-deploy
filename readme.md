@@ -2,9 +2,9 @@
 一键发布内容到服务器\OSS\COS
 
 ```javascript
-const deply = require('./index');
+const deploy = require('./index');
 
-deply({
+deploy({
   dir: '', // 部署内容所在目录
   rule: { // 部署的规则
     prefix: '', // 路径前缀
@@ -14,7 +14,7 @@ deply({
     },
   },
   config: {
-    deplyType: 'oss', // 部署类型 oss | server *注：cos开发中
+    deployType: 'oss', // 部署类型 oss | server *注：cos开发中
     alioss: {
       bucket: '',
       region: '',

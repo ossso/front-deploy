@@ -191,7 +191,7 @@ var scan = async (dir, ignoreRule) => scanDir({
   ignoreRule,
 });
 
-const deply = async ({
+const deploy = async ({
   // 上传目录
   dir,
   // 规则
@@ -201,7 +201,7 @@ const deply = async ({
   const startTime = Date.now();
   console.log(chalk__default["default"].white(` 正则扫描目录[${dir}] `));
   const {
-    deplyType = 'server',
+    deployType = 'server',
     alioss,
     server,
   } = utils.isObject(config) ? config : {};
@@ -220,7 +220,7 @@ const deply = async ({
     });
     if (itemIndex > -1) {
       const item = transferItem.type === 'move' ? files.splice(itemIndex, 1) : files[itemIndex];
-      tasks[transferItem.deplyType ?? deplyType].push({
+      tasks[transferItem.deployType ?? deployType].push({
         path: item.path,
         remotePath: transferItem.remotePath,
       });
@@ -236,7 +236,7 @@ const deply = async ({
 
   files.forEach((i) => {
     if (i.isFile) {
-      tasks[deplyType].push({
+      tasks[deployType].push({
         path: i.path,
         remotePath: path.join(rule.prefix ?? '', i.relative, i.name),
       });
@@ -264,4 +264,4 @@ const deply = async ({
   console.log(chalk__default["default"].bgBlue(' 部署完成 '));
 };
 
-module.exports = deply;
+module.exports = deploy;
