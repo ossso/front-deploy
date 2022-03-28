@@ -60,8 +60,8 @@ const deploy = async ({
     }
   });
 
-  console.log(chalk.yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`));
   const total = tasks.oss.length + tasks.cos.length + tasks.server.length;
+  console.log(chalk.yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`, `Total: ${total}`));
   const bar = new ProgressBar(' 部署上传 :bar[:percent] 耗时:elapseds ', {
     complete: '>',
     incomplete: '-',
@@ -70,13 +70,22 @@ const deploy = async ({
   });
 
   // OSS上传
-  await Promise.all(tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())));
+  await Promise.all(
+    tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
+  );
   // COS TODO
   // 服务端上传
+  let scp2 = null;
   for (let i = 0; i < tasks.server.length; i += 1) {
     const item = tasks.server[i];
     // eslint-disable-next-line no-await-in-loop
-    await serverUpload(item, server).then(() => bar.tick());
+    scp2 = await serverUpload(item, server).then((res) => {
+      bar.tick();
+      return res;
+    });
+  }
+  if (scp2) {
+    scp2?.close();
   }
   console.log(chalk.bgBlue(' 部署完成 '));
 };

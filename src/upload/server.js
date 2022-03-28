@@ -7,6 +7,8 @@ import {
   toLinux,
 } from '../utils/path-win-2-linux';
 
+const sshField = '__ssh';
+
 async function serverUpload(
   item,
   config = {},
@@ -36,7 +38,9 @@ async function serverUpload(
   /**
    * 注入配置
    */
-  scp2.defaults(ssh);
+  if (!scp2[sshField]) {
+    scp2.defaults(ssh);
+  }
 
   /**
    * 执行上传
@@ -51,9 +55,8 @@ async function serverUpload(
           console.error(err);
           reject(err);
         } else {
-          resolve();
+          resolve(scp2);
         }
-        scp2.close();
       },
     );
   });
