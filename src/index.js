@@ -3,6 +3,7 @@ import { isObject } from '@ossso/utils';
 import chalk from 'chalk';
 import ProgressBar from 'progress';
 import {
+  cos as cosUpload,
   oss as ossUpload,
   server as serverUpload,
 } from './upload/index';
@@ -20,6 +21,7 @@ const deploy = async ({
   const {
     deployType = 'server',
     alioss,
+    cos,
     server,
   } = isObject(config) ? config : {};
   const tasks = {
@@ -27,7 +29,7 @@ const deploy = async ({
     oss: [],
     cos: [],
   };
-  const files = await scan(dir);
+  const files = await scan(dir, rule?.ignoreRule);
 
   // 部分内容修改相对位置
   const transferToTasks = (transferItem) => {
@@ -61,31 +63,39 @@ const deploy = async ({
   });
 
   const total = tasks.oss.length + tasks.cos.length + tasks.server.length;
-  console.log(chalk.yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`, `Total: ${total}`));
-  const bar = new ProgressBar(' 部署上传 :bar[:percent] 耗时:elapseds ', {
+  console.log(chalk.yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`));
+  const bar = new ProgressBar(' 部署上传 :bar[:percent][:current/:total] 耗时:elapseds 预计剩余:eta', {
     complete: '>',
     incomplete: '-',
     total,
     width: Math.min(total * 2, 30),
   });
 
-  // OSS上传
-  await Promise.all(
-    tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
-  );
-  // COS TODO
-  // 服务端上传
-  let scp2 = null;
-  for (let i = 0; i < tasks.server.length; i += 1) {
-    const item = tasks.server[i];
-    // eslint-disable-next-line no-await-in-loop
-    scp2 = await serverUpload(item, server).then((res) => {
-      bar.tick();
-      return res;
-    });
-  }
-  if (scp2) {
-    scp2?.close();
+  try {
+    // OSS上传
+    await Promise.all(
+      tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
+    );
+    // COS上传
+    await Promise.all(
+      tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
+    );
+    // 服务器上传
+    let scp2 = null;
+    for (let i = 0; i < tasks.server.length; i += 1) {
+      const item = tasks.server[i];
+      // eslint-disable-next-line no-await-in-loop
+      scp2 = await serverUpload(item, server).then((res) => {
+        bar.tick();
+        return res;
+      });
+      if (scp2) {
+        scp2?.close();
+      }
+    }
+  } catch (error) {
+    console.log(chalk.bgRed(' 部署异常 '));
+    throw error;
   }
   console.log(chalk.bgBlue(' 部署完成 '));
 };
