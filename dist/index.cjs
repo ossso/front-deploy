@@ -4,6 +4,7 @@ var path = require('path');
 var utils = require('@ossso/utils');
 var chalk = require('chalk');
 var ProgressBar = require('progress');
+var COS = require('cos-nodejs-sdk-v5');
 var OSS = require('ali-oss');
 var scp2 = require('scp2');
 var promises = require('fs/promises');
@@ -13,12 +14,56 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var chalk__default = /*#__PURE__*/_interopDefaultLegacy(chalk);
 var ProgressBar__default = /*#__PURE__*/_interopDefaultLegacy(ProgressBar);
+var COS__default = /*#__PURE__*/_interopDefaultLegacy(COS);
 var OSS__default = /*#__PURE__*/_interopDefaultLegacy(OSS);
 var scp2__default = /*#__PURE__*/_interopDefaultLegacy(scp2);
 var ignore__default = /*#__PURE__*/_interopDefaultLegacy(ignore);
 
 // 转换Windows路径为Linux路径
 const toLinux = (str) => str.replace(/\\\\/g, '/').replace(/\\/g, '/');
+
+/**
+ * 腾讯云COS - PUT单个文件对象
+ */
+
+/**
+ * 上传文件到COS
+ */
+async function cosUpload(
+  item,
+  cosConfig = {},
+) {
+  const {
+    Bucket,
+    Region,
+    SecretId,
+    SecretKey,
+  } = cosConfig;
+  /**
+   * 实例化OSS SDK对象
+   */
+  const client = new COS__default["default"]({
+    SecretId,
+    SecretKey,
+  });
+
+  return new Promise((resolve, reject) => {
+    client.putObject({
+      Bucket,
+      Region,
+      // 保存路径
+      Key: toLinux(item.remotePath),
+      // 本地路径
+      Body: item.path,
+    }, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
 
 /**
  * 阿里云OSS - PUT单个文件对象
@@ -206,6 +251,7 @@ const deploy = async ({
   const {
     deployType = 'server',
     alioss,
+    cos,
     server,
   } = utils.isObject(config) ? config : {};
   const tasks = {
@@ -213,7 +259,7 @@ const deploy = async ({
     oss: [],
     cos: [],
   };
-  const files = await scan(dir);
+  const files = await scan(dir, rule?.ignoreRule);
 
   // 部分内容修改相对位置
   const transferToTasks = (transferItem) => {
@@ -247,31 +293,39 @@ const deploy = async ({
   });
 
   const total = tasks.oss.length + tasks.cos.length + tasks.server.length;
-  console.log(chalk__default["default"].yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`, `Total: ${total}`));
-  const bar = new ProgressBar__default["default"](' 部署上传 :bar[:percent] 耗时:elapseds ', {
+  console.log(chalk__default["default"].yellow.bold(' 扫描完成', `${Date.now() - startTime}ms`));
+  const bar = new ProgressBar__default["default"](' 部署上传 :bar[:percent][:current/:total] 耗时:elapseds 预计剩余:eta', {
     complete: '>',
     incomplete: '-',
     total,
     width: Math.min(total * 2, 30),
   });
 
-  // OSS上传
-  await Promise.all(
-    tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
-  );
-  // COS TODO
-  // 服务端上传
-  let scp2 = null;
-  for (let i = 0; i < tasks.server.length; i += 1) {
-    const item = tasks.server[i];
-    // eslint-disable-next-line no-await-in-loop
-    scp2 = await serverUpload(item, server).then((res) => {
-      bar.tick();
-      return res;
-    });
-  }
-  if (scp2) {
-    scp2?.close();
+  try {
+    // OSS上传
+    await Promise.all(
+      tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
+    );
+    // COS上传
+    await Promise.all(
+      tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
+    );
+    // 服务器上传
+    let scp2 = null;
+    for (let i = 0; i < tasks.server.length; i += 1) {
+      const item = tasks.server[i];
+      // eslint-disable-next-line no-await-in-loop
+      scp2 = await serverUpload(item, server).then((res) => {
+        bar.tick();
+        return res;
+      });
+      if (scp2) {
+        scp2?.close();
+      }
+    }
+  } catch (error) {
+    console.log(chalk__default["default"].bgRed(' 部署异常 '));
+    throw error;
   }
   console.log(chalk__default["default"].bgBlue(' 部署完成 '));
 };

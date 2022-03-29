@@ -1,6 +1,6 @@
 {
   "name": "@ossso/front-deploy",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "前端发布工具",
   "main": "index.js",
   "exports": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "rollup ./src/index.js --file dist/index.cjs --format cjs",
-    "publish": "npm run build && npm publish",
+    "release": "npm run build && npm publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
