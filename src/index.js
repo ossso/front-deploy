@@ -17,7 +17,7 @@ const deploy = async ({
   config,
 }) => {
   const startTime = Date.now();
-  console.log(chalk.white(` 正则扫描目录[${dir}] `));
+  console.log(chalk.white(` 正在扫描目录[${dir}] `));
   const {
     deployType = 'server',
     alioss,
@@ -73,13 +73,17 @@ const deploy = async ({
 
   try {
     // OSS上传
-    await Promise.all(
-      tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
-    );
+    if (tasks.oss.length) {
+      await Promise.all(
+        tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
+      );
+    }
     // COS上传
-    await Promise.all(
-      tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
-    );
+    if (tasks.cos.length) {
+      await Promise.all(
+        tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
+      );
+    }
     // 服务器上传
     let scp2 = null;
     for (let i = 0; i < tasks.server.length; i += 1) {
