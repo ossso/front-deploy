@@ -6,17 +6,18 @@ var chalk = require('chalk');
 var ProgressBar = require('progress');
 var COS = require('cos-nodejs-sdk-v5');
 var OSS = require('ali-oss');
-var scp2 = require('scp2');
+var SftpClient = require('ssh2-sftp-client');
 var promises = require('fs/promises');
 var ignore = require('ignore');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
+var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 var chalk__default = /*#__PURE__*/_interopDefaultLegacy(chalk);
 var ProgressBar__default = /*#__PURE__*/_interopDefaultLegacy(ProgressBar);
 var COS__default = /*#__PURE__*/_interopDefaultLegacy(COS);
 var OSS__default = /*#__PURE__*/_interopDefaultLegacy(OSS);
-var scp2__default = /*#__PURE__*/_interopDefaultLegacy(scp2);
+var SftpClient__default = /*#__PURE__*/_interopDefaultLegacy(SftpClient);
 var ignore__default = /*#__PURE__*/_interopDefaultLegacy(ignore);
 
 // 转换Windows路径为Linux路径
@@ -104,59 +105,41 @@ async function ossUpload(
  * 上传文件到服务器
  */
 
-const sshField = '__ssh';
-
 async function serverUpload(
   item,
-  config = {},
+  sshConfig,
 ) {
-  const {
-    port,
-    host,
-    username,
-    password,
-    privateKey,
-  } = config;
-  /**
-   * SSH配置
-   */
-  const ssh = {
-    port,
-    host,
-    username,
-  };
+  const localPath = item.path;
+  const remotePath = toLinux(item.remotePath);
+  const remoteDir = path__default["default"].dirname(remotePath);
 
-  if (privateKey) {
-    ssh.privateKey = privateKey;
-  } else {
-    ssh.password = password;
-  }
-
-  /**
-   * 注入配置
-   */
-  if (!scp2__default["default"][sshField]) {
-    scp2__default["default"].defaults(ssh);
-  }
+  const sftp = new SftpClient__default["default"]();
 
   /**
    * 执行上传
    */
-  return new Promise((resolve, reject) => {
-    scp2__default["default"].upload(
-      item.path,
-      // 远程保存路径
-      toLinux(item.remotePath),
-      (err) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(scp2__default["default"]);
-        }
-      },
-    );
-  });
+  try {
+    await sftp.connect(sshConfig);
+    // 检查远程目录是否存在，如果不存在则创建
+    try {
+      await sftp.stat(remoteDir);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // 远程目录不存在，创建目录
+        await sftp.mkdir(remoteDir, true); // 参数 true 表示递归创建目录
+      } else {
+        throw err;
+      }
+    }
+    // 上传文件
+    await sftp.put(localPath, remotePath);
+    // 关闭SFTP连接
+    await sftp.end();
+  } catch (err) {
+    // 关闭SFTP连接
+    await sftp.end();
+    throw err;
+  }
 }
 
 /**
@@ -174,7 +157,7 @@ const scanDir = async ({
   ig = null,
   // 忽略规则
   ignoreRule = null,
-}) => {
+}, level = 0) => {
   const dirStat = await promises.stat(dir);
   if (!dirStat || !dirStat.isDirectory()) {
     throw Error(`扫描目录 ${dir} 不合法，无法继续扫描`);
@@ -194,6 +177,7 @@ const scanDir = async ({
       path: path.join(dir, i),
       // 相对位置
       relative: parent,
+      level,
     };
     // 判定文件类型 与 判定是否为忽略文件目录
     return promises.stat(item.path).then((res) => {
@@ -228,9 +212,10 @@ const scanDir = async ({
       ].filter((o) => o).join('/'),
       list,
       ig: scanDirIg,
-    });
+    }, level + 1);
   }));
   list.push(...files);
+  list.sort((a, b) => a.level - b.level);
   return list;
 };
 
@@ -247,7 +232,7 @@ const deploy = async ({
   config,
 }) => {
   const startTime = Date.now();
-  console.log(chalk__default["default"].white(` 正则扫描目录[${dir}] `));
+  console.log(chalk__default["default"].white(` 正在扫描目录[${dir}] `));
   const {
     deployType = 'server',
     alioss,
@@ -303,13 +288,17 @@ const deploy = async ({
 
   try {
     // OSS上传
-    await Promise.all(
-      tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
-    );
+    if (tasks.oss.length) {
+      await Promise.all(
+        tasks.oss.map((i) => ossUpload(i, alioss).then(() => bar.tick())),
+      );
+    }
     // COS上传
-    await Promise.all(
-      tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
-    );
+    if (tasks.cos.length) {
+      await Promise.all(
+        tasks.cos.map((i) => cosUpload(i, cos).then(() => bar.tick())),
+      );
+    }
     // 服务器上传
     let scp2 = null;
     for (let i = 0; i < tasks.server.length; i += 1) {

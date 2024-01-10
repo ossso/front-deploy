@@ -2,64 +2,47 @@
  * 上传文件到服务器
  */
 
-import scp2 from 'scp2';
+import path from 'path';
+import SftpClient from 'ssh2-sftp-client';
 import {
   toLinux,
 } from '../utils/path-win-2-linux';
 
-const sshField = '__ssh';
-
 async function serverUpload(
   item,
-  config = {},
+  sshConfig,
 ) {
-  const {
-    port,
-    host,
-    username,
-    password,
-    privateKey,
-  } = config;
-  /**
-   * SSH配置
-   */
-  const ssh = {
-    port,
-    host,
-    username,
-  };
+  const localPath = item.path;
+  const remotePath = toLinux(item.remotePath);
+  const remoteDir = path.dirname(remotePath);
 
-  if (privateKey) {
-    ssh.privateKey = privateKey;
-  } else {
-    ssh.password = password;
-  }
-
-  /**
-   * 注入配置
-   */
-  if (!scp2[sshField]) {
-    scp2.defaults(ssh);
-  }
+  const sftp = new SftpClient();
 
   /**
    * 执行上传
    */
-  return new Promise((resolve, reject) => {
-    scp2.upload(
-      item.path,
-      // 远程保存路径
-      toLinux(item.remotePath),
-      (err) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(scp2);
-        }
-      },
-    );
-  });
+  try {
+    await sftp.connect(sshConfig);
+    // 检查远程目录是否存在，如果不存在则创建
+    try {
+      await sftp.stat(remoteDir);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // 远程目录不存在，创建目录
+        await sftp.mkdir(remoteDir, true); // 参数 true 表示递归创建目录
+      } else {
+        throw err;
+      }
+    }
+    // 上传文件
+    await sftp.put(localPath, remotePath);
+    // 关闭SFTP连接
+    await sftp.end();
+  } catch (err) {
+    // 关闭SFTP连接
+    await sftp.end();
+    throw err;
+  }
 }
 
 export default serverUpload;

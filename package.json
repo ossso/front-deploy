@@ -1,6 +1,6 @@
 {
   "name": "@ossso/front-deploy",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "前端发布工具",
   "main": "index.js",
   "exports": {
@@ -43,7 +43,7 @@
     "cos-nodejs-sdk-v5": "^2.11.6",
     "ignore": "^5.2.0",
     "progress": "^2.0.3",
-    "scp2": "^0.5.0",
-    "single-line-log": "^1.1.2"
+    "single-line-log": "^1.1.2",
+    "ssh2-sftp-client": "^9.1.0"
   }
 }

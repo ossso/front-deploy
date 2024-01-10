@@ -25,7 +25,7 @@ export const scanDir = async ({
   ig = null,
   // 忽略规则
   ignoreRule = null,
-}) => {
+}, level = 0) => {
   const dirStat = await stat(dir);
   if (!dirStat || !dirStat.isDirectory()) {
     throw Error(`扫描目录 ${dir} 不合法，无法继续扫描`);
@@ -45,6 +45,7 @@ export const scanDir = async ({
       path: join(dir, i),
       // 相对位置
       relative: parent,
+      level,
     };
     // 判定文件类型 与 判定是否为忽略文件目录
     return stat(item.path).then((res) => {
@@ -79,9 +80,10 @@ export const scanDir = async ({
       ].filter((o) => o).join('/'),
       list,
       ig: scanDirIg,
-    });
+    }, level + 1);
   }));
   list.push(...files);
+  list.sort((a, b) => a.level - b.level);
   return list;
 };
 
