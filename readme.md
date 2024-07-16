@@ -1,5 +1,5 @@
-# 前端发布工具  
-一键发布内容到服务器\OSS\COS
+# 前端内容自动化部署工具  
+一键部署构建后的内容到服务器\阿里云OSS\腾讯云COS
 
 ### 配置概览
 ```javascript
@@ -8,10 +8,10 @@ const deploy = require('./index');
 deploy({
   dir: '', // 部署内容所在目录
   rule: { // 部署的规则
-    prefix: '', // 路径前缀
+    prefix: '', // 路径前缀，相对路径
     transfer: {  // 转移部分文件，例如将index.html部署到另外一个位置
-      match: 'index.html',
-      remotePath: 'index.html',
+      match: 'index.html', // 本地的相对路径
+      remotePath: 'index.html', // 远程的绝对路径 = path.join(serverPath,remotePath)
     },
     // ignore 忽略规则
     ignoreRule: '',
@@ -44,8 +44,10 @@ deploy({
       port: 22,
       // 账号
       username: 'root',
-      // 密码或密钥
-      password: '', // 或者为 privateKey
+      // 密码或密钥 二选一
+      password: '',
+      // 或者为 privateKey
+      // privateKey: '',
     },
   },
 });

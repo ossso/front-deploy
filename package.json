@@ -1,7 +1,7 @@
 {
   "name": "@ossso/front-deploy",
   "version": "1.2.1",
-  "description": "前端发布工具",
+  "description": "前端内容自动化部署工具",
   "main": "index.js",
   "exports": {
     "require": "./dist/index.cjs",
@@ -37,13 +37,13 @@
     "rollup": "^2.70.1"
   },
   "dependencies": {
-    "@ossso/utils": "^1.0.4",
-    "ali-oss": "^6.17.1",
+    "@ossso/utils": "^1.2.1",
+    "ali-oss": "^6.20.0",
     "chalk": "^4.1.2",
-    "cos-nodejs-sdk-v5": "^2.11.6",
+    "cos-nodejs-sdk-v5": "^2.14.3",
     "ignore": "^5.2.0",
     "progress": "^2.0.3",
     "single-line-log": "^1.1.2",
-    "ssh2-sftp-client": "^9.1.0"
+    "ssh2-sftp-client": "^10.0.3"
   }
 }
