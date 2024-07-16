@@ -1,6 +1,6 @@
 {
   "name": "@ossso/front-deploy",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "前端发布工具",
   "main": "index.js",
   "exports": {
