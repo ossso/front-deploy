@@ -230,7 +230,12 @@ const deploy = async ({
   // 规则
   rule,
   config,
+  callback,
 }) => {
+  const {
+    deployBefore,
+    deployAfter,
+  } = callback || {};
   const startTime = Date.now();
   console.log(chalk__default["default"].white(` 正在扫描目录[${dir}] `));
   const {
@@ -286,6 +291,9 @@ const deploy = async ({
     width: Math.min(total * 2, 30),
   });
 
+  if (typeof deployBefore === 'function') {
+    await deployBefore(files, tasks, transferToTasks);
+  }
   try {
     // OSS上传
     if (tasks.oss.length) {
@@ -315,6 +323,9 @@ const deploy = async ({
   } catch (error) {
     console.log(chalk__default["default"].bgRed(' 部署异常 '));
     throw error;
+  }
+  if (typeof deployAfter === 'function') {
+    await deployAfter(files, tasks);
   }
   console.log(chalk__default["default"].bgBlue(' 部署完成 '));
 };
