@@ -1,5 +1,5 @@
-# 前端发布工具  
-一键发布内容到服务器\OSS\COS
+# 前端内容自动化部署工具  
+一键部署构建后的内容到服务器\阿里云OSS\腾讯云COS
 
 ### 配置概览
 ```javascript
@@ -8,10 +8,10 @@ const deploy = require('./index');
 deploy({
   dir: '', // 部署内容所在目录
   rule: { // 部署的规则
-    prefix: '', // 路径前缀
+    prefix: '', // 路径前缀，相对路径
     transfer: {  // 转移部分文件，例如将index.html部署到另外一个位置
-      match: 'index.html',
-      remotePath: 'index.html',
+      match: 'index.html', // 本地的相对路径
+      remotePath: 'index.html', // 远程的绝对路径 = path.join(serverPath,remotePath)
     },
     // ignore 忽略规则
     ignoreRule: '',
@@ -44,8 +44,22 @@ deploy({
       port: 22,
       // 账号
       username: 'root',
-      // 密码或密钥
-      password: '', // 或者为 privateKey
+      // 密码或密钥 二选一
+      password: '',
+      // 或者为 privateKey
+      // privateKey: '',
+    },
+  },
+  callback: {
+    deployBefore: (files, tasks) => {
+      // 部署前的回调
+      // files，扫描到的文件列表
+      // tasks，执行任务对象
+    },
+    deployAfter: (files, tasks) => {
+      // 部署后的回调
+      // files，扫描到文件列表
+      // tasks，执行任务对象
     },
   },
 });
@@ -79,5 +93,14 @@ deploy({
 | **alioss** | `Object` | null | 阿里云OSS的配置，参考配置概览 |
 | **cos** | `Object` | null | 腾讯云COS的配置，参考配置概览 |
 | **server** | `Object` | null | 服务器的配置，参考配置概览 |  
+
+-----------
+
+### `callback:` 回调函数    
+
+| 属性 | 值类型 | 默认值 | 说明 |
+| ---- | ---- | ---- | ---- |
+| **deployBefore** | `Function` | null | 部署前回调，支持异步，`files` 扫描到的文件列表，`tasks` 执行任务对象 |
+| **deployAfter** | `Function` | null | 部署后回调，支持异步，`files` 扫描到的文件列表，`tasks` 执行任务对象 |
 
 -----------
