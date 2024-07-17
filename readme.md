@@ -50,6 +50,18 @@ deploy({
       // privateKey: '',
     },
   },
+  callback: {
+    deployBefore: (files, tasks) => {
+      // 部署前的回调
+      // files，扫描到的文件列表
+      // tasks，执行任务对象
+    },
+    deployAfter: (files, tasks) => {
+      // 部署后的回调
+      // files，扫描到文件列表
+      // tasks，执行任务对象
+    },
+  },
 });
 ```
 
@@ -81,5 +93,14 @@ deploy({
 | **alioss** | `Object` | null | 阿里云OSS的配置，参考配置概览 |
 | **cos** | `Object` | null | 腾讯云COS的配置，参考配置概览 |
 | **server** | `Object` | null | 服务器的配置，参考配置概览 |  
+
+-----------
+
+### `callback:` 回调函数    
+
+| 属性 | 值类型 | 默认值 | 说明 |
+| ---- | ---- | ---- | ---- |
+| **deployBefore** | `Function` | null | 部署前回调，支持异步，`files` 扫描到的文件列表，`tasks` 执行任务对象 |
+| **deployAfter** | `Function` | null | 部署后回调，支持异步，`files` 扫描到的文件列表，`tasks` 执行任务对象 |
 
 -----------
