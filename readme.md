@@ -1,9 +1,12 @@
 # 前端内容自动化部署工具  
 一键部署构建后的内容到服务器\阿里云OSS\腾讯云COS
 
+## 安装前注意
+包内引用了`ssh2`，在Windows环境下使用，最好先安装`node-gyp`，具体安装方法请参考[node-gyp](https://github.com/nodejs/node-gyp)
+
 ### 配置概览
 ```javascript
-const deploy = require('./index');
+const deploy = require('@ossso/front-deploy');
 
 deploy({
   dir: '', // 部署内容所在目录
@@ -104,3 +107,62 @@ deploy({
 | **deployAfter** | `Function` | null | 部署后回调，支持异步，`files` 扫描到的文件列表，`tasks` 执行任务对象 |
 
 -----------
+
+### VITE，自动部署配置示例
+```js
+import deploy from '@ossso/front-deploy';
+
+export default () => {
+  let outDir;
+  return {
+    name: 'auto-deploy',
+    configResolved(config) {
+      // 获取输出目录
+      outDir = config.build.outDir;
+    },
+    buildEnd() {
+      deploy({
+        dir: outDir,
+        rule: {
+           // 部署到cdn的路径前缀，这个的路径与vite.config.js中的base相同
+          prefix: 'cdn_path_prefix',
+          // 如果你的index.html需要部署服务器，这里需要处理一下
+          transfer: {
+            match: 'index.html',
+            remotePath: '/home/wwwroot/demo/index.html',
+            deployType: 'server',
+          },
+        },
+        config: {
+          // 其他内容的默认部署位置
+          deployType: 'oss',
+          // 阿里云OSS的配置
+          alioss: {
+            bucket: '',
+            region: '',
+            accessKeyId: '',
+            accessKeySecret: '',
+          },
+          // 服务器的配置
+          server: {
+            host: '',
+            port: 22,
+            username: 'root',
+            password: '',
+          },
+        },
+        callback: {
+          // 部署前回调，通常是要处理某个文件或者路径的时候用
+          deployBefore(files, tasks) {
+            console.log('deployBefore', files, tasks);
+          },
+          // 部署后回调，通常是要发送通知或者刷新CDN路径
+          deployAfter(files, tasks) {
+            console.log('deployAfter', files, tasks);
+          },
+        },
+      });
+    },
+  };
+};
+```

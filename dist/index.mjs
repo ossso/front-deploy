@@ -1,14 +1,12 @@
-'use strict';
-
-var path = require('node:path');
-var utils = require('@ossso/utils');
-var chalk = require('chalk');
-var ProgressBar = require('progress');
-var COS = require('cos-nodejs-sdk-v5');
-var OSS = require('ali-oss');
-var SftpClient = require('ssh2-sftp-client');
-var promises = require('node:fs/promises');
-var ignore = require('ignore');
+import path, { join } from 'node:path';
+import { isSet, isObject } from '@ossso/utils';
+import chalk from 'chalk';
+import ProgressBar from 'progress';
+import COS from 'cos-nodejs-sdk-v5';
+import OSS from 'ali-oss';
+import SftpClient from 'ssh2-sftp-client';
+import { stat, readdir } from 'node:fs/promises';
+import ignore from 'ignore';
 
 // 转换Windows路径为Linux路径
 const toLinux = (str) => str.replace(/\\\\/g, '/').replace(/\\/g, '/');
@@ -152,29 +150,29 @@ const scanDir = async ({
   // 忽略规则
   ignoreRule = null,
 }, level = 0) => {
-  const dirStat = await promises.stat(dir);
+  const dirStat = await stat(dir);
   if (!dirStat || !dirStat.isDirectory()) {
     throw Error(`扫描目录 ${dir} 不合法，无法继续扫描`);
   }
   const scanDirIg = ig || ignore();
-  if (!ig && utils.isSet(ignoreRule)) {
+  if (!ig && isSet(ignoreRule)) {
     scanDirIg.add(ignoreRule);
   }
   const files = [];
-  const children = await promises.readdir(dir);
+  const children = await readdir(dir);
   // 分析当前目录内容
   await Promise.all(children.map((i) => {
     const item = {
       // 文件名称
       name: i,
       // 完整路径
-      path: path.join(dir, i),
+      path: join(dir, i),
       // 相对位置
       relative: parent,
       level,
     };
     // 判定文件类型 与 判定是否为忽略文件目录
-    return promises.stat(item.path).then((res) => {
+    return stat(item.path).then((res) => {
       item.isFile = res.isFile();
       item.isDirectory = res.isDirectory();
       // 是否为忽略文件或目录
@@ -237,7 +235,7 @@ const deploy = async ({
     alioss,
     cos,
     server,
-  } = utils.isObject(config) ? config : {};
+  } = isObject(config) ? config : {};
   const tasks = {
     server: [],
     oss: [],
@@ -263,7 +261,7 @@ const deploy = async ({
   if (Array.isArray(rule.transfer)) {
     rule.transfer.forEach((i) => transferToTasks(i));
   } else
-  if (utils.isObject(rule.transfer)) {
+  if (isObject(rule.transfer)) {
     transferToTasks(rule.transfer);
   }
 
@@ -271,7 +269,7 @@ const deploy = async ({
     if (i.isFile) {
       tasks[deployType].push({
         path: i.path,
-        remotePath: path.join(rule.prefix ?? '', i.relative, i.name),
+        remotePath: join(rule.prefix ?? '', i.relative, i.name),
       });
     }
   });
@@ -324,4 +322,4 @@ const deploy = async ({
   console.log(chalk.bgBlue(' 部署完成 '));
 };
 
-module.exports = deploy;
+export { deploy as default };
