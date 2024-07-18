@@ -109,6 +109,7 @@ deploy({
 -----------
 
 ### VITE，自动部署配置示例
+创建一个`deploy.js`
 ```js
 import deploy from '@ossso/front-deploy';
 
@@ -120,7 +121,7 @@ export default () => {
       // 获取输出目录
       outDir = config.build.outDir;
     },
-    buildEnd() {
+    closeBundle() {
       deploy({
         dir: outDir,
         rule: {
@@ -165,4 +166,16 @@ export default () => {
     },
   };
 };
+```
+然后在`vite.config.js`中引入
+```js
+import deployPlugin from './deploy';
+
+export default defineConfig({
+  plugins: [
+    // ... 其他配置
+    deployPlugin(),
+  ],
+  ...其他配置
+});
 ```
