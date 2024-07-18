@@ -1,24 +1,22 @@
-'use strict';
-
-var require$$0$5 = require('node:module');
-var require$$0$6 = require('node:path');
-var require$$1$3 = require('node:worker_threads');
-var require$$1$1 = require('node:tty');
-var require$$1$2 = require('node:util');
-var require$$0$7 = require('node:os');
-var chalk = require('chalk');
-var require$$0$8 = require('node:assert');
-var require$$0$9 = require('node:fs');
-var require$$2$1 = require('node:url');
-var require$$0$a = require('node:buffer');
-var require$$0$b = require('node:v8');
-var utils$3 = require('@ossso/utils');
-var ProgressBar = require('progress');
-var COS = require('cos-nodejs-sdk-v5');
-var OSS = require('ali-oss');
-var SftpClient = require('ssh2-sftp-client');
-var promises = require('node:fs/promises');
-var ignore = require('ignore');
+import require$$0$5 from 'node:module';
+import require$$0$6, { join } from 'node:path';
+import require$$1$3 from 'node:worker_threads';
+import require$$1$1 from 'node:tty';
+import require$$1$2 from 'node:util';
+import require$$0$7 from 'node:os';
+import chalk from 'chalk';
+import require$$0$8 from 'node:assert';
+import require$$0$9 from 'node:fs';
+import require$$2$1 from 'node:url';
+import require$$0$a from 'node:buffer';
+import require$$0$b from 'node:v8';
+import { isSet, isObject } from '@ossso/utils';
+import ProgressBar from 'progress';
+import COS from 'cos-nodejs-sdk-v5';
+import OSS from 'ali-oss';
+import SftpClient from 'ssh2-sftp-client';
+import { stat, readdir } from 'node:fs/promises';
+import ignore from 'ignore';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -82949,29 +82947,29 @@ const scanDir = async ({
   // 忽略规则
   ignoreRule = null,
 }, level = 0) => {
-  const dirStat = await promises.stat(dir);
+  const dirStat = await stat(dir);
   if (!dirStat || !dirStat.isDirectory()) {
     throw Error(`扫描目录 ${dir} 不合法，无法继续扫描`);
   }
   const scanDirIg = ig || ignore();
-  if (!ig && utils$3.isSet(ignoreRule)) {
+  if (!ig && isSet(ignoreRule)) {
     scanDirIg.add(ignoreRule);
   }
   const files = [];
-  const children = await promises.readdir(dir);
+  const children = await readdir(dir);
   // 分析当前目录内容
   await Promise.all(children.map((i) => {
     const item = {
       // 文件名称
       name: i,
       // 完整路径
-      path: require$$0$6.join(dir, i),
+      path: join(dir, i),
       // 相对位置
       relative: parent,
       level,
     };
     // 判定文件类型 与 判定是否为忽略文件目录
-    return promises.stat(item.path).then((res) => {
+    return stat(item.path).then((res) => {
       item.isFile = res.isFile();
       item.isDirectory = res.isDirectory();
       // 是否为忽略文件或目录
@@ -83034,7 +83032,7 @@ const deploy$1 = async ({
     alioss,
     cos,
     server,
-  } = utils$3.isObject(config) ? config : {};
+  } = isObject(config) ? config : {};
   const tasks = {
     server: [],
     oss: [],
@@ -83060,7 +83058,7 @@ const deploy$1 = async ({
   if (Array.isArray(rule.transfer)) {
     rule.transfer.forEach((i) => transferToTasks(i));
   } else
-  if (utils$3.isObject(rule.transfer)) {
+  if (isObject(rule.transfer)) {
     transferToTasks(rule.transfer);
   }
 
@@ -83068,7 +83066,7 @@ const deploy$1 = async ({
     if (i.isFile) {
       tasks[deployType].push({
         path: i.path,
-        remotePath: require$$0$6.join(rule.prefix ?? '', i.relative, i.name),
+        remotePath: join(rule.prefix ?? '', i.relative, i.name),
       });
     }
   });
@@ -83138,4 +83136,4 @@ var frontDeploy = deploy.default;
 
 var index = /*@__PURE__*/getDefaultExportFromCjs(frontDeploy);
 
-module.exports = index;
+export { index as default };

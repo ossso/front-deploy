@@ -2,3 +2,4 @@ node_modules
 dist
 demo/
 demo.js
+/index.js

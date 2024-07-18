@@ -1,9 +1,12 @@
 # 前端内容自动化部署工具  
 一键部署构建后的内容到服务器\阿里云OSS\腾讯云COS
 
+## 安装前注意
+包内引用了`ssh2`，在Windows环境下使用，最好先安装`node-gyp`，具体安装方法请参考[node-gyp](https://github.com/nodejs/node-gyp)
+
 ### 配置概览
 ```javascript
-const deploy = require('./index');
+const deploy = require('@ossso/front-deploy');
 
 deploy({
   dir: '', // 部署内容所在目录

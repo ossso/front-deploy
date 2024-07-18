@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * 启动入口
  */
