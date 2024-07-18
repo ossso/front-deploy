@@ -5,7 +5,7 @@ import nodeExternals from 'rollup-plugin-node-externals';
 
 export default [
   {
-    input: 'index.js',
+    input: 'src/index.js',
     output: [
       {
         file: 'dist/index.mjs',
